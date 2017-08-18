@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NY Times API Project</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+        crossorigin="anonymous">
+
+    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+        }
+
+        #topPhoto {
+            width: 250px;
+        }
+
+        #media {
+            width: 100%;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            /* Light grey */
+            border-top: 16px solid #3498db;
+            /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>NY Times API Project</h1>
+        <h3>By Michael Kravchenko</h3>
+        <img id="topPhoto" src="https://s-media-cache-ak0.pinimg.com/originals/0f/fc/1e/0ffc1eb7a62d64a9e09fa7765fc2850f.jpg">
+        
+        <h3>NY Times Headlines</h3>
+        <p>
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+                    <div class="input-group">
+                        <input type="text" id="citySearch" class="form-control" placeholder="Search a city...">
+                        <span class="input-group-btn">
+                        <button id="cityButton" class="btn btn-default" onclick="customSearch()" type="button">Search</button>
+                    </span>
+                    </div>
+                    <!-- /input-group -->
+                </div>
+                <!-- /.col-lg-6 -->
+            </div>
+            <!-- /.row -->
+        </p>
+        <div id="media"></div>
+        <ul id="headlines">
+            <!-- List article titles HERE!!!! -->
+        </ul>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Latest compiled and minified JavaScript -->
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <script>
+        // for enter key on search
+        document.getElementById("citySearch")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode == 13) {
+                    document.getElementById("cityButton").click();
+                }
+            });
+/*jQuery method
+        $("#citySearch").keyup(function (event) {
+            if (event.keyCode == 13) {
+                $("#cityButton").click();
+            }
+        }); 
+*/
+        function customSearch() {
+            let searchTerm = $('input').val();
+            searchTermClean = searchTerm.replace(/[^0-9a-zA-Z]/g, '+');
+            $('input').val("");
+            nytUrl = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${searchTermClean}&sort=newest&api-key=d26348a00533454f84832c671a5c63b9`
+
+            document.getElementById("media").innerHTML = '<div class="loader"></div>'
+            $.getJSON(nytUrl, function (data) {
+                var myLi = ''
+                console.log(data)
+                document.getElementById("media").innerHTML = `<h5>Headlines on ${searchTerm}</h5>`
+                //CODE GOES HERE
+                for (var i = 0; i < data.response.docs.length; i++) {
+                    //myLi += "<li>" + data.response.docs[i].headline.main + "</li>"
+                    if (data.response.docs[i].multimedia.length === 3) {
+                        // if (data.response.docs[i].multimedia[0])   otherway
+                        myLi += `<li> 
+                    <a href="${data.response.docs[i].web_url}" target="_blank">
+                    ${data.response.docs[i].headline.main} <br>
+                    <img src="https://www.nytimes.com/${data.response.docs[i].multimedia[2].url}">
+                    </a>
+                    <p>${data.response.docs[i].snippet}</p> 
+                    </li>`
+                    } else {
+                        myLi += `<li> 
+                    <a href="${data.response.docs[i].web_url}" target="_blank">
+                    ${data.response.docs[i].headline.main}
+                    </a>
+                     <p>${data.response.docs[i].snippet}</p>  
+                    </li>`
+                    }
+
+                }
+
+                document.getElementById("headlines").innerHTML = myLi;
+            })
+        }
+    </script>
+</body>
